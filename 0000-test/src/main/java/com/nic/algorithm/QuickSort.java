@@ -42,13 +42,15 @@ public class QuickSort {
                 j--;
             }
         }
+        System.out.println("[" + pivotPos + ",    " + pivotElem + "]  i=" + i + ",    j=" + j);
+        System.out.println(Arrays.toString(arr));
 
         if (j > beginPos) {
             quickSort(arr, beginPos, j);
         }
 
         if (i < endPos) {
-            quickSort(arr, j, endPos);
+            quickSort(arr, i, endPos);
         }
 
     }
