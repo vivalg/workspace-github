@@ -9,8 +9,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class DictIO {
+
+    private static final ArrayBlockingQueue<String> cacheQueue = new ArrayBlockingQueue<String>(2000);
+    private static BufferedWriter writer = null;
+
+    static {
+        File historyFile = new File("/data/dict/his.txt");
+        try {
+            if (!historyFile.exists()) {
+                historyFile.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(historyFile, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void writeFile(Set<String> pwds, File file) throws IOException {
         if (!file.exists()) {
@@ -59,6 +75,37 @@ public class DictIO {
             }
         }
         return set;
+    }
+
+    public static Set<String> readFileWithHistryRemoved(File file, File hisFile) throws IOException {
+        Set<String> wholeSet = readFile(file);
+        System.out.println("--->" + wholeSet.size());
+        Set<String> hisSet = readFile(hisFile);
+        System.out.println("--->" + hisSet.size());
+        for (String elem : hisSet) {
+            wholeSet.remove(elem);
+        }
+        System.out.println("--->" + wholeSet.size());
+        return wholeSet;
+    }
+
+    public static void writeHistory(String str) throws IOException {
+        synchronized (cacheQueue) {
+            cacheQueue.add(str);
+            if (cacheQueue.size() >= 100) {
+                String elem = null;
+                while ((elem = cacheQueue.poll()) != null) {
+                    writer.write(elem);
+                    writer.newLine();
+                }
+                writer.flush();
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Set<String> set = DictGen.genSixDigit();
+        DictIO.writeFile(set, new File("/data/dict/6digit.txt"));
     }
 
 }
