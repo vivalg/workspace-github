@@ -172,6 +172,11 @@
 			<artifactId>ehcache-core</artifactId>
 			<version>2.6.5</version>
 		</dependency>
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>2.1</version>
+		</dependency>
 	</dependencies>
 	
 	<build>
