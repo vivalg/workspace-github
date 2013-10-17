@@ -1,10 +1,14 @@
 package com.nic.test;
 
+import java.util.Properties;
+
 public class Test {
 
     public static void main(String[] args) {
-        Integer i = 32 & 1023;
-        System.out.println(i);
+    	Properties properties = new Properties();
+    	properties.put("ab", "da date");
+    	System.out.println(properties.size());
+    	System.out.println(properties.get("ab"));
         System.out.println("hello there");
     }
 
