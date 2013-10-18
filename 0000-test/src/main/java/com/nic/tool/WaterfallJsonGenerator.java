@@ -12,125 +12,146 @@ import javax.imageio.ImageIO;
 
 public class WaterfallJsonGenerator {
 
-	private final static String[] suffixs = { ".jpg", ".png", ".gif", ".ico", ".bmp" };
-	private static final Integer IMG_WIDTH = 192;
+    private final static String[] suffixs = {".jpg", ".png", ".gif", ".ico", ".bmp"};
+    private static final Integer IMG_WIDTH = 192;
 
-	static class ImageObj {
-		private String name;
-		private BufferedImage image;
-		private File file;
+    private static String imagePrefix = "";
+    private static boolean genratePreview = false;
 
-		public ImageObj(File file) {
-			this.getImage(file);
-			this.getRelativePath(file);
-			this.file = file;
-		}
+    static class ImageObj {
+        private String name;
+        private BufferedImage image;
+        private File file;
 
-		private void getImage(File file) {
-			try {
-				this.image = ImageIO.read(file);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+        public ImageObj(File file) {
+            this.getImage(file);
+            this.getRelativePath(file);
+            this.file = file;
+        }
 
-		private void getRelativePath(File file) {
-			String path;
-			try {
-				path = file.getCanonicalPath();
-				path = path.replaceAll("\\\\", "/");
-				String relativePath = path.substring(path.indexOf("/images") + 1);
-				this.name = relativePath;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+        private void getImage(File file) {
+            try {
+                this.image = ImageIO.read(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-		public String getName() {
-			return name;
-		}
+        private void getRelativePath(File file) {
+            String path;
+            try {
+                path = file.getCanonicalPath();
+                path = path.replaceAll("\\\\", "/");
+                String relativePath = path.substring(path.indexOf("/images") + 1);
+                this.name = relativePath;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-		public BufferedImage getImage() {
-			return image;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public File getFile() {
-			return file;
-		}
+        public BufferedImage getImage() {
+            return image;
+        }
 
-	}
+        public File getFile() {
+            return file;
+        }
 
-	public static void main(String[] args) throws IOException {
-		List<ImageObj> images = listImages();
-		String json = generateJSON(images);
-		writeFile("waterfall-images.json", json);
-		for (ImageObj imageObj : images) {
-			genPreviewImage(imageObj.getFile());
-		}
-	}
+    }
 
-	public static List<ImageObj> listImages() throws IOException {
-		List<ImageObj> images = new ArrayList<ImageObj>();
-		File dir = new File(".");
-		File[] files = dir.listFiles();
-		for (File file : files) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			for (String suffix : suffixs) {
-				if (file.getName().endsWith(suffix)) {
-					images.add(new ImageObj(file));
-					break;
-				}
-			}
-		}
-		return images;
-	}
+    public static void main(String[] args) throws IOException {
+        readArgs(args);
+        List<ImageObj> images = listImages();
+        String json = generateJSON(images);
+        writeFile("waterfall-images.json", json);
 
-	public static String generateJSON(List<ImageObj> images) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("{\n");
-		builder.append("\t\"total\": " + images.size() + ",\n");
-		builder.append("\t\"result\": [\n");
-		for (ImageObj image : images) {
-			builder.append("\t\t{\n");
-			builder.append("\t\t\t\"image\": \"" + image.getName() + "\",\n");
-			builder.append("\t\t\t\"width\": " + image.getImage().getWidth() + ",\n");
-			builder.append("\t\t\t\"height\": " + image.getImage().getHeight() + "\n");
-			builder.append("\t\t},\n");
-		}
-		builder.deleteCharAt(builder.length() - 1);
-		builder.deleteCharAt(builder.length() - 1);
-		builder.append("\t]\n");
-		builder.append("}");
-		return builder.toString();
-	}
+        if (genratePreview) {
+            for (ImageObj imageObj : images) {
+                genPreviewImage(imageObj.getFile());
+            }
+        }
+    }
 
-	public static void writeFile(String fileName, String json) throws IOException {
-		File file = new File(fileName);
-		if (!file.exists()) {
-			file.createNewFile();
-		}
-		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
-		out.write(json.getBytes());
-		out.flush();
-		out.close();
-	}
+    public static void readArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if ("-prefix".equalsIgnoreCase(args[i])) {
+                if (i + 1 < args.length) {
+                    imagePrefix = args[i + 1];
+                }
+            }
+            if ("-generate-preview".equalsIgnoreCase(args[i])) {
+                genratePreview = true;
+            }
+        }
+    }
 
-	public static void genPreviewImage(File file) throws IOException {
-		BufferedImage image = ImageIO.read(file);
-		int width = image.getWidth();
-		int height = image.getHeight();
-		int newWidth = IMG_WIDTH;
-		int newHeight = Math.round(IMG_WIDTH * height / width);
+    public static List<ImageObj> listImages() throws IOException {
+        List<ImageObj> images = new ArrayList<ImageObj>();
+        File dir = new File(".");
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                continue;
+            }
+            for (String suffix : suffixs) {
+                if (file.getName().endsWith(suffix)) {
+                    images.add(new ImageObj(file));
+                    break;
+                }
+            }
+        }
+        return images;
+    }
 
-		BufferedImage previewImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-		previewImage.getGraphics().drawImage(image, 0, 0, newWidth, newHeight, null);
+    public static String generateJSON(List<ImageObj> images) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\n");
+        builder.append("\t\"total\": " + images.size() + ",\n");
+        builder.append("\t\"result\": [\n");
+        for (ImageObj image : images) {
+            builder.append("\t\t{\n");
+            builder.append("\t\t\t\"image\": \"" + imagePrefix + image.getFile().getName() + "\",\n");
+            builder.append("\t\t\t\"width\": " + image.getImage().getWidth() + ",\n");
+            builder.append("\t\t\t\"height\": " + image.getImage().getHeight() + "\n");
+            builder.append("\t\t},\n");
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append("\n");
+        builder.append("\t]\n");
+        builder.append("}");
+        return builder.toString();
+    }
 
-		File previewFile = new File("./preview/" + file.getName());
-		if (!file.exists()) {
-			file.createNewFile();
-		}
-		ImageIO.write(previewImage, "PNG", previewFile);
-	}
+    public static void writeFile(String fileName, String json) throws IOException {
+        File file = new File(fileName);
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+        out.write(json.getBytes());
+        out.flush();
+        out.close();
+    }
+
+    public static void genPreviewImage(File file) throws IOException {
+        BufferedImage image = ImageIO.read(file);
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int newWidth = IMG_WIDTH;
+        int newHeight = Math.round(IMG_WIDTH * height / width);
+
+        BufferedImage previewImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        previewImage.getGraphics().drawImage(image, 0, 0, newWidth, newHeight, null);
+
+        File previewFile = new File("./preview/" + file.getName());
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        ImageIO.write(previewImage, "PNG", previewFile);
+    }
 }
