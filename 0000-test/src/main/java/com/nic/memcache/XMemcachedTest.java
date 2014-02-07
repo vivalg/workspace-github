@@ -27,7 +27,7 @@ public class XMemcachedTest {
         System.out.println(">>>>" + obj + "||" + ((TBean) obj).getName());
 
         printStats(client);
-        System.out.println("----done.");
+        System.out.println(">>>>done.");
         System.exit(0);
     }
 
@@ -47,9 +47,6 @@ public class XMemcachedTest {
         Map<InetSocketAddress, Map<String, String>> stats = client.getStats();
         for (Entry<InetSocketAddress, Map<String, String>> entry : stats.entrySet()) {
             System.out.println("----" + entry.getKey() + "----");
-            // for (Entry<String, String> en : entry.getValue().entrySet()) {
-            // System.out.println(en.getKey() + ":" + en.getValue());
-            // }
             TablePrinter.printMap(entry.getValue());
         }
     }

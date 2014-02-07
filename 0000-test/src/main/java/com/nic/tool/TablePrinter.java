@@ -2,6 +2,11 @@ package com.nic.tool;
 
 import java.util.Map;
 
+/**
+ * 工具类，打印数据表格
+ *
+ * @author willli
+ */
 public class TablePrinter {
 
     public static void printMap(Map<?, ?> map) {
