@@ -10,7 +10,11 @@ public class MemcachedTest {
 	public static void main(String[] args) throws IOException {
 		InetSocketAddress ia = new InetSocketAddress("127.0.0.1", 11211);
 		MemcachedClient client = new MemcachedClient(ia);
-		
+
+		Object object = client.get("name");
+		System.out.println(object);
+
+		System.out.println("finish");
 	}
-	
+
 }
